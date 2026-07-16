@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>DerekAI v4</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         html, body { 
             margin: 0; 
@@ -110,10 +111,11 @@
         .speech-bubble {
             padding: 12px 18px;
             border-radius: 20px;
-            max-width: 70%;
+            max-width: 85%; /* Made wider so beautiful tables have room to stretch */
             word-wrap: break-word;
             line-height: 1.5;
             position: relative; 
+            overflow-x: auto; /* Adds a clean scrollbar inside the bubble if a table is ultra-wide */
         }
 
         .user-message {
@@ -162,6 +164,40 @@
         }
         .ai-message .bubble-name { color: #007bff; }
         .user-message .bubble-name { color: white; }
+
+        /* --- BEAUTIFUL TABLE STYLING --- */
+        .speech-bubble table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+            font-size: 14px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .speech-bubble th, .speech-bubble td {
+            border: 1px solid #ddd;
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        .speech-bubble th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .speech-bubble tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        /* Lists clean spacing */
+        .speech-bubble ul, .speech-bubble ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
     </style>
 </head>
 <body>
@@ -200,7 +236,7 @@
                 logoContainer.classList.add("user-logo");
                 logoContainer.innerText = "👤";
             } else {
-                // DerekAI loads your custom uploaded logo (fixed extension to .png)
+                // DerekAI loads your custom uploaded logo
                 const logoImg = document.createElement("img");
                 logoImg.src = "derekAI_circle_logo.png";
                 logoImg.alt = "DerekAI Logo";
@@ -217,15 +253,28 @@
             nameSpan.innerText = senderName;
             bubbleDiv.appendChild(nameSpan);
 
-            const textSpan = document.createElement("span");
-            textSpan.innerText = text;
-            bubbleDiv.appendChild(textSpan);
+            // Create a span to hold the main body of the text/html
+            const contentSpan = document.createElement("span");
+            
+            if (isUser) {
+                // Keep user message safe as pure text
+                contentSpan.innerText = text;
+            } else {
+                // Run the AI's response through the markdown translator for tables, bolding, lists, etc.
+                if (typeof marked !== 'undefined') {
+                    contentSpan.innerHTML = marked.parse(text);
+                } else {
+                    contentSpan.innerText = text;
+                }
+            }
+            
+            bubbleDiv.appendChild(contentSpan);
 
             wrapperDiv.appendChild(bubbleDiv);
             chatbox.appendChild(wrapperDiv);
             chatbox.scrollTop = chatbox.scrollHeight;
 
-            return textSpan; 
+            return contentSpan; 
         }
 
         async function askAI() {
@@ -248,10 +297,15 @@
                 let replyText = await response.text();
                 
                 if (replyText && replyText.trim().length > 0) {
-                    // --- MAGIC CLEANER: Automatically strips out backslashes before quotes/apostrophes ---
+                    // --- MAGIC CLEANER: Removes backslashes before quotes/apostrophes ---
                     replyText = replyText.replace(/\\"/g, '"').replace(/\\'/g, "'");
                     
-                    responseTextNode.innerText = replyText;
+                    // Update content with translated HTML
+                    if (typeof marked !== 'undefined') {
+                        responseTextNode.innerHTML = marked.parse(replyText);
+                    } else {
+                        responseTextNode.innerText = replyText;
+                    }
                 } else {
                     responseTextNode.innerText = "I received an empty response. Let's try again!";
                 }

@@ -80,7 +80,7 @@
             gap: 10px;
         }
 
-        /* --- STYLED LOGO CONTAINER --- */
+        /* --- LOGO IMAGE STYLING --- */
         .msg-logo {
             width: 40px;
             height: 40px;
@@ -91,7 +91,7 @@
             flex-shrink: 0; 
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden; /* Keeps the custom image perfectly circular */
+            overflow: hidden;
         }
 
         .msg-logo img {
@@ -196,11 +196,11 @@
             logoContainer.classList.add("msg-logo");
 
             if (isUser) {
-                // User gets a clean, firewall-proof default emoji profile icon
+                // User gets a clean emoji profile icon
                 logoContainer.classList.add("user-logo");
                 logoContainer.innerText = "👤";
             } else {
-                // DerekAI loads your custom uploaded image file locally!
+                // DerekAI loads your custom uploaded logo
                 const logoImg = document.createElement("img");
                 logoImg.src = "derekAI_circle_logo.jpg";
                 logoImg.alt = "DerekAI Logo";

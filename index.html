@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DerekAI</title>
+    <style>
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%;
+            height: 100%;
+            background-color: #f0f2f5; 
+            font-family: sans-serif;
+            overflow: hidden; 
+        }
+        
+        .chat-container { 
+            width: 100%; 
+            height: 100%;
+            background: white; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h2 { 
+            text-align: center; 
+            color: #333; 
+            margin-top: 0; 
+            margin-bottom: 15px;
+            font-size: 28px; 
+        }
+        
+        #chatbox { 
+            flex-grow: 1;
+            overflow-y: auto; 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            background: #fafafa; 
+            font-size: 16px;
+        }
+        
+        .input-area { 
+            display: flex; 
+            gap: 12px; 
+            margin-top: auto;
+        }
+        
+        input { 
+            flex: 1; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            outline: none; 
+            font-size: 16px; 
+        }
+        
+        button { 
+            padding: 15px 30px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 16px; 
+        }
+        button:hover { background: #0056b3; }
+        .msg { margin: 10px 0; padding: 12px 18px; border-radius: 10px; max-width: 75%; word-wrap: break-word; line-height: 1.5; }
+        .user-msg { background: #e1ffc7; margin-left: auto; text-align: right; }
+        .ai-msg { background: #eedfff; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <h2>🤖 DerekAI</h2>
+        <div id="chatbox">
+            <div class="msg ai-msg"><strong>DerekAI:</strong> Ask me a yes/no question! I've been loaded with tons of general knowledge.</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userQuestion" placeholder="Type a question..." onkeypress="handleKeyPress(event)">
+            <button onclick="askAI()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const defaultMemory = {
+            "is one plus one two": "yes",
+            "is two plus two four": "yes",
+            "is three plus three six": "yes",
+            "is four plus four eight": "yes",
+            "is the sky blue": "yes",
+            "is water wet": "yes",
+            "can pigs fly": "no",
+            "is fire hot": "yes",
+            "is ice hot": "no",
+            "is ice cold": "yes",
+            "is the sun a star": "yes",
+            "is the moon a planet": "no",
+            "do fish swim": "yes",
+            "is grass green": "yes",
+            "is snow warm": "no",
+            "is a banana blue": "no",
+            "is chocolate sweet": "yes",
+            "do birds fly": "yes",
+            "is a circle square": "no",
+            "is a square round": "no",
+            "is sugar sweet": "yes",
+            "is lemon sour": "yes",
+            "is a dog an animal": "yes",
+            "is a cat a dog": "no",
+            "is the earth flat": "no",
+            "is the earth round": "yes",
+            "do cats bark": "no",
+            "do dogs bark": "yes",
+            "is gold expensive": "yes",
+            "is paper made from trees": "yes",
+            "do humans need water": "yes",
+            "is gravity real": "yes",
+            "is the ocean made of water": "yes",
+            "is the ocean blue": "yes",
+            "is summer hot": "yes",
+            "is winter cold": "yes",
+            "does gravity pull things down": "yes",
+            "can humans breathe underwater": "no",
+            "can humans fly like birds": "no",
+            "is a spider an insect": "no",
+            "is a tomato a fruit": "yes",
+            "is a carrot a vegetable": "yes",
+            "does the sun rise in the east": "yes",
+            "does the sun set in the west": "yes",
+            "is coal white": "no",
+            "is milk white": "yes",
+            "is blood blue": "no",
+            "is blood red": "yes",
+            "do snakes have legs": "no",
+            "do frogs jump": "yes",
+            "is a whale a fish": "no",
+            "is a dolphin a mammal": "yes",
+            "is a shark a fish": "yes",
+            "does wood float in water": "yes",
+            "does iron float in water": "no",
+            "is plastic natural": "no",
+            "is cotton a plant": "yes",
+            "is glass made of sand": "yes",
+            "is diamond the hardest natural material": "yes",
+            "is steel strong": "yes",
+            "do rocks float": "no",
+            "is an apple a fruit": "yes",
+            "is broccoli sweet": "no",
+            "is salt salty": "yes",
+            "is pepper spicy": "yes",
+            "is a bicycle faster than a car": "no",
+            "is a plane faster than a car": "yes",
+            "is a cheetah fast": "yes",
+            "is a turtle fast": "no",
+            "is a snail slow": "yes",
+            "is an elephant small": "no",
+            "is a mouse small": "yes",
+            "is an ant an insect": "yes",
+            "is the pacific ocean the largest": "yes",
+            "is mount everest the tallest mountain": "yes",
+            "is the amazon a river": "yes",
+            "is a day 24 hours long": "yes",
+            "is a week 7 days long": "yes",
+            "is a year 365 days long": "yes",
+            "is one minute 60 seconds": "yes",
+            "is one hour 60 minutes": "yes",
+            "is canada in europe": "no",
+            "is mexico in north america": "yes",
+            "is italy in europe": "yes",
+            "is china in asia": "yes",
+            "is egypt in africa": "yes",
+            "is australia a continent": "yes",
+            "is brazil in south america": "yes",
+            "is the moon made of cheese": "no",
+            "is rain dry": "no",
+            "is a potato a root": "yes",
+            "is a rose a flower": "yes",
+            "is grass pink": "no",
+            "is the moon hot": "no",
+            "is lightning hot": "yes",
+            "is thunder loud": "yes",
+            "is whispering quiet": "yes",
+            "is yelling loud": "yes",
+            "is a rock hard": "yes",
+            "is a pillow soft": "yes",
+            "is a feather heavy": "no",
+            "is metal heavy": "yes",
+            "do dogs have four legs": "yes",
+            "do cats have wings": "no",
+            "is basketball a sport": "yes",
+            "is coding cool": "yes",
+            "is space cold": "yes",
+            "is derekai smart": "yes",
+            "do octopuses have eight arms": "yes"
+        };
+
+        // Safety fallback if localStorage is blocked by browser settings
+        let customMemory = {};
+        try {
+            customMemory = JSON.parse(localStorage.getItem('derekai_memory')) || {};
+        } catch (e) {
+            console.warn("Storage is blocked. Switching to temporary session memory.");
+        }
+        
+        let lastQuestion = "";
+        let awaitingTeaching = false;
+
+        function appendMessage(sender, text, isUser) {
+            const chatbox = document.getElementById("chatbox");
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("msg");
+            msgDiv.classList.add(isUser ? "user-msg" : "ai-msg");
+            msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            chatbox.appendChild(msgDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        function askAI() {
+            const inputField = document.getElementById("userQuestion");
+            const rawText = inputField.value.trim();
+            if (!rawText) return;
+
+            appendMessage("You", rawText, true);
+            inputField.value = "";
+
+            const cleanText = rawText.toLowerCase().replace(/[?.!]/g, "").trim();
+
+            if (awaitingTeaching) {
+                if (cleanText === "yes" || cleanText === "no") {
+                    customMemory[lastQuestion] = cleanText;
+                    try {
+                        localStorage.setItem('derekai_memory', JSON.stringify(customMemory));
+                    } catch (e) {
+                        console.warn("Could not save to localStorage.");
+                    }
+                    appendMessage("DerekAI", `Awesome! I've learned that "${lastQuestion}" is ${cleanText}. Try asking me again!`, false);
+                } else {
+                    appendMessage("DerekAI", "Please answer with either 'yes' or 'no' so I can learn properly!", false);
+                }
+                awaitingTeaching = false;
+                lastQuestion = "";
+                return;
+            }
+
+            if (customMemory[cleanText]) {
+                appendMessage("DerekAI", customMemory[cleanText].toUpperCase() + "!", false);
+            } else if (defaultMemory[cleanText]) {
+                appendMessage("DerekAI", defaultMemory[cleanText].toUpperCase() + "!", false);
+            } else {
+                appendMessage("DerekAI", `I don't know the answer to that yet! Is the answer "yes" or "no"? (Type 'yes' or 'no' to teach me!)`, false);
+                lastQuestion = cleanText;
+                awaitingTeaching = true;
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                askAI();
+            }
+        }
+    </script>
+</body>
+</html>

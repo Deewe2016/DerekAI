@@ -152,10 +152,10 @@
         <h2>🤖 DerekAI</h2>
         <div id="chatbox">
             <div class="message-wrapper ai-message">
-                <img src="https://via.placeholder.com/100/eeeeee/000000?text=DerekAI" alt="DerekAI" class="msg-logo">
+                <img src="https://placehold.co/100/eeeeee/000000?text=DerekAI" alt="DerekAI" class="msg-logo">
                 <div class="speech-bubble">
                     <span class="bubble-name">DerekAI</span>
-                    Hello! Ask me absolutely anything. I'm online, fast, and ready to chat!
+                    Hello! Ask me absolutely anything. I am online, fast, and ready to chat!
                 </div>
             </div>
         </div>
@@ -166,8 +166,9 @@
     </div>
 
     <script>
-        const derekAiLogoUrl = "https://via.placeholder.com/100/eeeeee/000000?text=DerekAI";
-        const userLogoUrl = "https://via.placeholder.com/100/007bff/ffffff?text=YOU";
+        // Swapped out dead placeholder links for working ones!
+        const derekAiLogoUrl = "https://placehold.co/100/eeeeee/000000?text=DerekAI";
+        const userLogoUrl = "https://placehold.co/100/007bff/ffffff?text=YOU";
 
         function appendMessage(senderName, text, isUser) {
             const chatbox = document.getElementById("chatbox");
@@ -206,20 +207,16 @@
             const rawText = inputField.value.trim();
             if (!rawText) return;
 
-            // Display user message and clear input
             appendMessage("You", rawText, true);
             inputField.value = "";
 
-            // Disable buttons during request
             sendBtn.disabled = true;
             inputField.disabled = true;
             sendBtn.innerText = "...";
 
-            // Add the thinking bubble
             const responseTextNode = appendMessage("DerekAI", "Thinking...", false);
 
             try {
-                // Call the lightning-fast Pollinations AI text API
                 const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(rawText)}`);
                 const replyText = await response.text();
                 
@@ -234,7 +231,6 @@
                 responseTextNode.innerText = "Ah, something went wrong. Let me try answering again!";
             }
 
-            // Re-enable everything
             sendBtn.disabled = false;
             inputField.disabled = false;
             sendBtn.innerText = "Send";

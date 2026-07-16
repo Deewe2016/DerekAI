@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DerekAI v9</title>
+    <title>DerekAI v10</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         /* --- CSS VARIABLES FOR THEMES --- */
@@ -512,16 +512,19 @@
             setTheme(savedTheme);
 
             const savedAllChats = localStorage.getItem("derekai_multichats");
-            const savedActiveId = localStorage.getItem("derekai_active_id");
 
             if (savedAllChats) {
                 allChats = JSON.parse(savedAllChats);
             }
 
-            if (allChats.length === 0) {
+            // --- SMART LAUNCH LOGIC ---
+            // If we have no chats, OR if the very top chat already has a message history,
+            // we spin up a totally fresh empty landing chat automatically!
+            if (allChats.length === 0 || allChats[0].history.length > 0) {
                 createNewChat();
             } else {
-                activeChatId = savedActiveId || allChats[0].id;
+                // Otherwise, just load up the existing clean/empty landing chat
+                activeChatId = allChats[0].id;
                 renderSidebar();
                 loadActiveChat();
             }

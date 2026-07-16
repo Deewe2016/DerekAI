@@ -200,7 +200,7 @@
                 logoContainer.classList.add("user-logo");
                 logoContainer.innerText = "👤";
             } else {
-                // Fixed extension to .png to match your uploaded file!
+                // DerekAI loads your custom uploaded logo (fixed extension to .png)
                 const logoImg = document.createElement("img");
                 logoImg.src = "derekAI_circle_logo.png";
                 logoImg.alt = "DerekAI Logo";
@@ -245,9 +245,12 @@
 
             try {
                 const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(rawText)}`);
-                const replyText = await response.text();
+                let replyText = await response.text();
                 
                 if (replyText && replyText.trim().length > 0) {
+                    // --- MAGIC CLEANER: Automatically strips out backslashes before quotes/apostrophes ---
+                    replyText = replyText.replace(/\\"/g, '"').replace(/\\'/g, "'");
+                    
                     responseTextNode.innerText = replyText;
                 } else {
                     responseTextNode.innerText = "I received an empty response. Let's try again!";

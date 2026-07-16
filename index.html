@@ -22,16 +22,39 @@
             box-sizing: border-box; 
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
-        h2 { 
-            text-align: center; 
-            color: #333; 
-            margin-top: 0; 
-            margin-bottom: 15px;
-            font-size: 28px; 
+        /* Top Header Area with Title & Clear Button */
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 2px solid #007bff;
             padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        h2 { 
+            color: #333; 
+            margin: 0;
+            font-size: 28px; 
+        }
+
+        /* Clear Chat Button Styling */
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .clear-btn:hover {
+            background: #bd2130;
         }
         
         #chatbox { 
@@ -63,7 +86,7 @@
             font-size: 16px; 
         }
         
-        button { 
+        .send-btn { 
             padding: 15px 30px; 
             background: #007bff; 
             color: white; 
@@ -73,7 +96,7 @@
             font-weight: bold; 
             font-size: 16px; 
         }
-        button:hover { background: #0056b3; }
+        .send-btn:hover { background: #0056b3; }
 
         .message-wrapper {
             display: flex;
@@ -111,11 +134,11 @@
         .speech-bubble {
             padding: 12px 18px;
             border-radius: 20px;
-            max-width: 85%; /* Made wider so beautiful tables have room to stretch */
+            max-width: 85%; 
             word-wrap: break-word;
             line-height: 1.5;
             position: relative; 
-            overflow-x: auto; /* Adds a clean scrollbar inside the bubble if a table is ultra-wide */
+            overflow-x: auto; 
         }
 
         .user-message {
@@ -203,7 +226,11 @@
 <body>
 
     <div class="chat-container">
-        <h2>🤖 DerekAI</h2>
+        <div class="header-area">
+            <h2>🤖 DerekAI</h2>
+            <button class="clear-btn" onclick="clearHistory()">Clear Chat</button>
+        </div>
+        
         <div id="chatbox">
             <div class="message-wrapper ai-message">
                 <div class="msg-logo">
@@ -211,18 +238,39 @@
                 </div>
                 <div class="speech-bubble">
                     <span class="bubble-name">DerekAI</span>
-                    Hello! Ask me absolutely anything. I am online, fast, and ready to chat!
+                    <span>Hello! Ask me absolutely anything. I am online, fast, and ready to chat!</span>
                 </div>
             </div>
         </div>
         <div class="input-area">
             <input type="text" id="userQuestion" placeholder="Ask anything..." onkeypress="handleKeyPress(event)">
-            <button id="sendBtn" onclick="askAI()">Send</button>
+            <button id="sendBtn" class="send-btn" onclick="askAI()">Send</button>
         </div>
     </div>
 
     <script>
-        function appendMessage(senderName, text, isUser) {
+        // Array to store our chat history logs locally
+        let chatHistory = [];
+
+        // Load existing chats from the browser's memory immediately when the page opens
+        window.onload = function() {
+            const savedHistory = localStorage.getItem("derekai_history");
+            if (savedHistory) {
+                chatHistory = JSON.parse(savedHistory);
+                
+                // Clear the default placeholder start message before rendering saved chats
+                const chatbox = document.getElementById("chatbox");
+                chatbox.innerHTML = "";
+
+                // Display all saved messages back onto the screen
+                chatHistory.forEach(msg => {
+                    renderMessageOnScreen(msg.sender, msg.text, msg.isUser);
+                });
+            }
+        };
+
+        // Helper function to render a bubble onto the screen
+        function renderMessageOnScreen(senderName, text, isUser) {
             const chatbox = document.getElementById("chatbox");
             const wrapperDiv = document.createElement("div");
             wrapperDiv.classList.add("message-wrapper");
@@ -232,11 +280,9 @@
             logoContainer.classList.add("msg-logo");
 
             if (isUser) {
-                // User gets a clean emoji profile icon
                 logoContainer.classList.add("user-logo");
                 logoContainer.innerText = "👤";
             } else {
-                // DerekAI loads your custom uploaded logo
                 const logoImg = document.createElement("img");
                 logoImg.src = "derekAI_circle_logo.png";
                 logoImg.alt = "DerekAI Logo";
@@ -253,14 +299,11 @@
             nameSpan.innerText = senderName;
             bubbleDiv.appendChild(nameSpan);
 
-            // Create a span to hold the main body of the text/html
             const contentSpan = document.createElement("span");
             
             if (isUser) {
-                // Keep user message safe as pure text
                 contentSpan.innerText = text;
             } else {
-                // Run the AI's response through the markdown translator for tables, bolding, lists, etc.
                 if (typeof marked !== 'undefined') {
                     contentSpan.innerHTML = marked.parse(text);
                 } else {
@@ -269,12 +312,25 @@
             }
             
             bubbleDiv.appendChild(contentSpan);
-
             wrapperDiv.appendChild(bubbleDiv);
             chatbox.appendChild(wrapperDiv);
             chatbox.scrollTop = chatbox.scrollHeight;
 
             return contentSpan; 
+        }
+
+        // Appends the message and registers it to our memory storage
+        function appendMessage(senderName, text, isUser) {
+            // Render on screen
+            const element = renderMessageOnScreen(senderName, text, isUser);
+
+            // Save to memory array (except temporary "Thinking..." states)
+            if (text !== "Thinking...") {
+                chatHistory.push({ sender: senderName, text: text, isUser: isUser });
+                localStorage.setItem("derekai_history", JSON.stringify(chatHistory));
+            }
+
+            return element; 
         }
 
         async function askAI() {
@@ -290,7 +346,8 @@
             inputField.disabled = true;
             sendBtn.innerText = "...";
 
-            const responseTextNode = appendMessage("DerekAI", "Thinking...", false);
+            // Show standard temporary loading message (not stored in memory)
+            const responseTextNode = renderMessageOnScreen("DerekAI", "Thinking...", false);
 
             try {
                 const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(rawText)}`);
@@ -300,12 +357,17 @@
                     // --- MAGIC CLEANER: Removes backslashes before quotes/apostrophes ---
                     replyText = replyText.replace(/\\"/g, '"').replace(/\\'/g, "'");
                     
-                    // Update content with translated HTML
+                    // Replace temporary "Thinking..." text with actual AI reply on screen
                     if (typeof marked !== 'undefined') {
                         responseTextNode.innerHTML = marked.parse(replyText);
                     } else {
                         responseTextNode.innerText = replyText;
                     }
+
+                    // Log the final reply permanently into local history storage
+                    chatHistory.push({ sender: "DerekAI", text: replyText, isUser: false });
+                    localStorage.setItem("derekai_history", JSON.stringify(chatHistory));
+
                 } else {
                     responseTextNode.innerText = "I received an empty response. Let's try again!";
                 }
@@ -319,6 +381,28 @@
             inputField.disabled = false;
             sendBtn.innerText = "Send";
             inputField.focus();
+        }
+
+        // Erases memory storage completely and resets display back to the original greeting
+        function clearHistory() {
+            if (confirm("Are you sure you want to clear your chat history? This cannot be undone.")) {
+                localStorage.removeItem("derekai_history");
+                chatHistory = [];
+                
+                // Revert to original starter view
+                const chatbox = document.getElementById("chatbox");
+                chatbox.innerHTML = `
+                    <div class="message-wrapper ai-message">
+                        <div class="msg-logo">
+                            <img src="derekAI_circle_logo.png" alt="DerekAI Logo">
+                        </div>
+                        <div class="speech-bubble">
+                            <span class="bubble-name">DerekAI</span>
+                            <span>Hello! Ask me absolutely anything. I am online, fast, and ready to chat!</span>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         function handleKeyPress(event) {

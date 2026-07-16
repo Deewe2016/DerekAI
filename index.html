@@ -80,7 +80,7 @@
             gap: 10px;
         }
 
-        /* --- FIREWALL-PROOF EMOJI AVATAR CSS --- */
+        /* --- STYLED LOGO CONTAINER --- */
         .msg-logo {
             width: 40px;
             height: 40px;
@@ -88,18 +88,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px; /* Makes the emoji look perfectly sized */
             flex-shrink: 0; 
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden; /* Keeps the custom image perfectly circular */
         }
-        /* AI Avatar Color */
-        .ai-logo {
-            background-color: #e9ecef;
+
+        .msg-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        /* User Avatar Color */
+
+        /* Fallback styling for user emoji */
         .user-logo {
             background-color: #007bff;
+            font-size: 22px;
+            color: white;
         }
 
         .speech-bubble {
@@ -165,7 +170,9 @@
         <h2>🤖 DerekAI</h2>
         <div id="chatbox">
             <div class="message-wrapper ai-message">
-                <div class="msg-logo ai-logo">🤖</div>
+                <div class="msg-logo">
+                    <img src="derekAI_circle_logo.jpg" alt="DerekAI Logo">
+                </div>
                 <div class="speech-bubble">
                     <span class="bubble-name">DerekAI</span>
                     Hello! Ask me absolutely anything. I am online, fast, and ready to chat!
@@ -185,12 +192,22 @@
             wrapperDiv.classList.add("message-wrapper");
             wrapperDiv.classList.add(isUser ? "user-message" : "ai-message");
 
-            // Create a styled div circle instead of loading an external image file
-            const logoDiv = document.createElement("div");
-            logoDiv.classList.add("msg-logo");
-            logoDiv.classList.add(isUser ? "user-logo" : "ai-logo");
-            logoDiv.innerText = isUser ? "👤" : "🤖"; 
-            wrapperDiv.appendChild(logoDiv);
+            const logoContainer = document.createElement("div");
+            logoContainer.classList.add("msg-logo");
+
+            if (isUser) {
+                // User gets a clean, firewall-proof default emoji profile icon
+                logoContainer.classList.add("user-logo");
+                logoContainer.innerText = "👤";
+            } else {
+                // DerekAI loads your custom uploaded image file locally!
+                const logoImg = document.createElement("img");
+                logoImg.src = "derekAI_circle_logo.jpg";
+                logoImg.alt = "DerekAI Logo";
+                logoContainer.appendChild(logoImg);
+            }
+
+            wrapperDiv.appendChild(logoContainer);
 
             const bubbleDiv = document.createElement("div");
             bubbleDiv.classList.add("speech-bubble");

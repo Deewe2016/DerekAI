@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DerekAI v6</title>
+    <title>DerekAI v7</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         html, body { 
@@ -597,7 +597,31 @@
             const responseTextNode = renderMessageOnScreen("DerekAI", "Thinking...", false);
 
             try {
-                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(rawText)}`);
+                // --- CONTEXT UPGRADE: Pack history messages to send to the AI ---
+                // Format history into the standard Chat completions format: [{role: 'user' | 'assistant', content: '...'}]
+                const payloadMessages = [];
+                
+                if (activeChat) {
+                    activeChat.history.forEach(msg => {
+                        payloadMessages.push({
+                            role: msg.isUser ? "user" : "assistant",
+                            content: msg.text
+                        });
+                    });
+                }
+
+                // Call the advanced chat completions endpoint
+                const response = await fetch("https://text.pollinations.ai/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        messages: payloadMessages,
+                        // Optional: You can specify a model like 'openai' or 'mistral' here!
+                    })
+                });
+                
                 let replyText = await response.text();
                 
                 if (replyText && replyText.trim().length > 0) {

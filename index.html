@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DerekAI v5</title>
+    <title>DerekAI v6</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         html, body { 
@@ -27,6 +27,12 @@
             padding: 15px;
             box-sizing: border-box;
             flex-shrink: 0;
+            transition: transform 0.3s ease, margin-left 0.3s ease;
+        }
+
+        /* Class added dynamically to hide the sidebar */
+        .sidebar.collapsed {
+            margin-left: -260px;
         }
 
         /* New Chat Button in Sidebar */
@@ -72,6 +78,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 8px;
         }
         .chat-item:hover {
             background: #2a2b2d;
@@ -80,16 +87,26 @@
             background: #343541;
         }
 
-        /* Delete individual chat button inside sidebar item */
-        .delete-chat-icon {
+        /* Controls for edit/delete icons on hover */
+        .chat-controls {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .chat-control-btn {
             color: #8e8ea0;
             background: transparent;
             border: none;
             cursor: pointer;
             font-size: 14px;
-            padding: 0 4px;
+            padding: 0 2px;
+            transition: color 0.2s;
         }
-        .delete-chat-icon:hover {
+        .chat-control-btn:hover {
+            color: #ffffff;
+        }
+        .chat-control-btn.delete-btn:hover {
             color: #ff4d4d;
         }
 
@@ -102,16 +119,35 @@
             box-sizing: border-box; 
             display: flex;
             flex-direction: column;
+            transition: width 0.3s ease;
         }
         
-        /* Top Header Area with Title */
+        /* Top Header Area with Title & Toggle Button */
         .header-area {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #007bff;
             padding-bottom: 10px;
             margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        /* Sidebar Toggle Burger Button */
+        .toggle-sidebar-btn {
+            background: transparent;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            color: #333;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .toggle-sidebar-btn:hover {
+            background-color: #f0f2f5;
         }
 
         h2 { 
@@ -288,7 +324,7 @@
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <button class="new-chat-btn" onclick="createNewChat()">➕ New Chat</button>
         <div class="chat-list" id="chatList">
             </div>
@@ -296,6 +332,7 @@
 
     <div class="chat-container">
         <div class="header-area">
+            <button class="toggle-sidebar-btn" onclick="toggleSidebar()">☰</button>
             <h2>🤖 DerekAI</h2>
         </div>
         
@@ -309,7 +346,6 @@
 
     <script>
         // Database to hold multiple conversations
-        // Format of each chat: { id: "timestamp", title: "First question...", history: [] }
         let allChats = [];
         let activeChatId = null;
 
@@ -323,10 +359,8 @@
             }
 
             if (allChats.length === 0) {
-                // If there are no chats saved, create a default first chat automatically!
                 createNewChat();
             } else {
-                // Set the loaded chat active
                 activeChatId = savedActiveId || allChats[0].id;
                 renderSidebar();
                 loadActiveChat();
@@ -352,20 +386,57 @@
                 titleSpan.style.overflow = "hidden";
                 titleSpan.style.textOverflow = "ellipsis";
                 titleSpan.style.whiteSpace = "nowrap";
+                titleSpan.style.flexGrow = "1";
                 chatItem.appendChild(titleSpan);
 
-                // Create a delete button (X) for this specific chat
+                // Create controls container (rename + delete)
+                const controlsDiv = document.createElement("div");
+                controlsDiv.classList.add("chat-controls");
+
+                // Rename button (Pencil emoji)
+                const renameBtn = document.createElement("button");
+                renameBtn.innerHTML = "✎";
+                renameBtn.classList.add("chat-control-btn");
+                renameBtn.title = "Rename Chat";
+                renameBtn.onclick = function(event) {
+                    event.stopPropagation(); // Stop clicking row from switching chat
+                    renameChat(chat.id);
+                };
+                controlsDiv.appendChild(renameBtn);
+
+                // Delete button (X symbol)
                 const deleteBtn = document.createElement("button");
                 deleteBtn.innerHTML = "✕";
-                deleteBtn.classList.add("delete-chat-icon");
+                deleteBtn.classList.add("chat-control-btn", "delete-btn");
+                deleteBtn.title = "Delete Chat";
                 deleteBtn.onclick = function(event) {
-                    event.stopPropagation(); // Prevents clicking the item and opening it
+                    event.stopPropagation(); // Stop row switch
                     deleteChat(chat.id);
                 };
                 
-                chatItem.appendChild(deleteBtn);
+                controlsDiv.appendChild(deleteBtn);
+                chatItem.appendChild(controlsDiv);
                 listContainer.appendChild(chatItem);
             });
+        }
+
+        // Slides sidebar in/out on button click
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("collapsed");
+        }
+
+        // Rename function for specific chat
+        function renameChat(chatId) {
+            const chat = allChats.find(c => c.id === chatId);
+            if (chat) {
+                const newTitle = prompt("Enter a new name for this chat:", chat.title);
+                if (newTitle !== null && newTitle.trim() !== "") {
+                    chat.title = newTitle.trim();
+                    saveDataToLocalStorage();
+                    renderSidebar();
+                }
+            }
         }
 
         // Initialize a completely new chat session
@@ -374,10 +445,10 @@
             const newChat = {
                 id: newId,
                 title: "New Chat",
-                history: [] // empty dialogue
+                history: []
             };
 
-            allChats.unshift(newChat); // Put it at the top of the sidebar list
+            allChats.unshift(newChat);
             activeChatId = newId;
 
             saveDataToLocalStorage();
@@ -385,19 +456,17 @@
             loadActiveChat();
         }
 
-        // Load the currently selected active chat onto the screen
+        // Load active conversation
         function loadActiveChat() {
             const chatbox = document.getElementById("chatbox");
-            chatbox.innerHTML = ""; // Clear current screen
+            chatbox.innerHTML = "";
 
             const activeChat = allChats.find(chat => chat.id === activeChatId);
             
             if (activeChat) {
                 if (activeChat.history.length === 0) {
-                    // Show standard greeting if this chat is brand new
                     renderMessageOnScreen("DerekAI", "Hello! Ask me absolutely anything. I am online, fast, and ready to chat!", false);
                 } else {
-                    // Re-render saved history messages
                     activeChat.history.forEach(msg => {
                         renderMessageOnScreen(msg.sender, msg.text, msg.isUser);
                     });
@@ -405,7 +474,7 @@
             }
         }
 
-        // Switches between different sidebar chats
+        // Switches chats
         function switchChat(chatId) {
             activeChatId = chatId;
             localStorage.setItem("derekai_active_id", activeChatId);
@@ -413,7 +482,7 @@
             loadActiveChat();
         }
 
-        // Deletes one specific conversation
+        // Deletes chat
         function deleteChat(chatId) {
             if (confirm("Delete this conversation permanently?")) {
                 allChats = allChats.filter(chat => chat.id !== chatId);
@@ -421,7 +490,6 @@
                 if (allChats.length === 0) {
                     createNewChat();
                 } else {
-                    // If we deleted the active chat, switch focus to the top available one
                     if (activeChatId === chatId) {
                         activeChatId = allChats[0].id;
                     }
@@ -432,13 +500,13 @@
             }
         }
 
-        // Saves everything securely to the browser database
+        // Stores state
         function saveDataToLocalStorage() {
             localStorage.setItem("derekai_multichats", JSON.stringify(allChats));
             localStorage.setItem("derekai_active_id", activeChatId);
         }
 
-        // Helper function to render bubbles on the screen
+        // Render message UI
         function renderMessageOnScreen(senderName, text, isUser) {
             const chatbox = document.getElementById("chatbox");
             const wrapperDiv = document.createElement("div");
@@ -488,7 +556,7 @@
             return contentSpan; 
         }
 
-        // Appends a new message and updates the history database in memory
+        // Register conversation records
         function appendMessage(senderName, text, isUser) {
             const element = renderMessageOnScreen(senderName, text, isUser);
 
@@ -497,7 +565,6 @@
                 if (activeChat) {
                     activeChat.history.push({ sender: senderName, text: text, isUser: isUser });
 
-                    // Set the conversation title to the user's very first question!
                     if (isUser && activeChat.history.filter(m => m.isUser).length === 1) {
                         activeChat.title = text;
                         renderSidebar();
@@ -515,7 +582,6 @@
             const rawText = inputField.value.trim();
             if (!rawText) return;
 
-            // Clear greeting message if this is the first message in a fresh chat
             const activeChat = allChats.find(chat => chat.id === activeChatId);
             if (activeChat && activeChat.history.length === 0) {
                 document.getElementById("chatbox").innerHTML = "";
@@ -528,7 +594,6 @@
             inputField.disabled = true;
             sendBtn.innerText = "...";
 
-            // Temporary UI loading message
             const responseTextNode = renderMessageOnScreen("DerekAI", "Thinking...", false);
 
             try {
@@ -545,7 +610,6 @@
                         responseTextNode.innerText = replyText;
                     }
 
-                    // Save AI response to active chat's memory
                     if (activeChat) {
                         activeChat.history.push({ sender: "DerekAI", text: replyText, isUser: false });
                         saveDataToLocalStorage();

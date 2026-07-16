@@ -429,7 +429,7 @@
         <div class="header-area">
             <button class="toggle-sidebar-btn" onclick="toggleSidebar()">☰</button>
             <h2>
-                <img src="your-logo-url.png" alt="DerekAI" class="header-logo" onerror="this.style.display='none';"> 
+                <img src="your-logo-url.png" alt="DerekAI Logo" class="header-logo" onerror="this.style.display='none';"> 
                 DerekAI
             </h2>
         </div>
@@ -451,7 +451,8 @@
             // Apply saved dark mode preference
             if (localStorage.getItem("derekai_darkmode") === "true") {
                 document.body.classList.add("dark-mode");
-                document.querySelector(".theme-toggle-btn").innerText = "☀️ Light Mode";
+                const btn = document.querySelector(".theme-toggle-btn");
+                if (btn) btn.innerText = "☀️ Light Mode";
             }
 
             const savedAllChats = localStorage.getItem("derekai_multichats");
@@ -476,7 +477,9 @@
             localStorage.setItem("derekai_darkmode", isDark);
             
             const btn = document.querySelector(".theme-toggle-btn");
-            btn.innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+            if (btn) {
+                btn.innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+            }
         }
 
         // Toggle Sidebar visibility
@@ -485,7 +488,7 @@
             sidebar.classList.toggle("collapsed");
         }
 
-        // Dummy placeholder functions for basic app structure
+        // Creates a brand new chat session
         function createNewChat() {
             const newId = Date.now().toString();
             allChats.unshift({ id: newId, title: "New Chat", messages: [] });
@@ -493,8 +496,11 @@
             saveAndRefresh();
         }
 
+        // Renders the list of chats in the sidebar
         function renderSidebar() {
             const listContainer = document.getElementById("chatList");
+            if (!listContainer) return;
+            
             listContainer.innerHTML = "";
             allChats.forEach(chat => {
                 const item = document.createElement("div");
@@ -505,6 +511,7 @@
             });
         }
 
+        // Switches active chat views
         function switchChat(id) {
             activeChatId = id;
             localStorage.setItem("derekai_active_id", id);
@@ -512,9 +519,12 @@
             loadActiveChat();
         }
 
+        // Loads active chat messages
         function loadActiveChat() {
             const activeChat = allChats.find(c => c.id === activeChatId);
             const chatbox = document.getElementById("chatbox");
+            if (!chatbox) return;
+
             chatbox.innerHTML = "";
             if (activeChat && activeChat.messages.length === 0) {
                 chatbox.innerHTML = `
@@ -527,6 +537,7 @@
             }
         }
 
+        // Saves current state to LocalStorage
         function saveAndRefresh() {
             localStorage.setItem("derekai_multichats", JSON.stringify(allChats));
             localStorage.setItem("derekai_active_id", activeChatId);
@@ -534,14 +545,18 @@
             loadActiveChat();
         }
 
+        // Enter key keypress handler
         function handleKeyPress(event) {
             if (event.key === "Enter") {
                 askAI();
             }
         }
 
+        // Simulated AI Messaging Pipeline
         function askAI() {
             const input = document.getElementById("userQuestion");
+            if (!input) return;
+
             const text = input.value.trim();
             if (!text) return;
 
@@ -564,8 +579,11 @@
             }
         }
 
+        // Helper to output user and AI text bubbles to DOM
         function appendMessageElement(sender, text) {
             const chatbox = document.getElementById("chatbox");
+            if (!chatbox) return;
+
             const landing = chatbox.querySelector(".landing-screen");
             if (landing) landing.remove();
 

@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>DerekAI v8</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
     <style>
         /* --- CSS THEME VARIABLES --- */
         :root {
@@ -579,7 +579,7 @@
             }
         }
 
-        // Helper to output user and AI text bubbles to DOM
+        // Helper to output user and AI text bubbles to DOM with Markdown Parsing
         function appendMessageElement(sender, text) {
             const chatbox = document.getElementById("chatbox");
             if (!chatbox) return;
@@ -589,10 +589,16 @@
 
             const msgDiv = document.createElement("div");
             msgDiv.className = `message-wrapper ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+            
+            // Uses standard window.marked.parse() format required by the global bundle
+            const parsedHTML = window.marked && typeof window.marked.parse === 'function' 
+                ? window.marked.parse(text) 
+                : text;
+
             msgDiv.innerHTML = `
                 <div class="speech-bubble">
                     <span class="bubble-name">${sender === 'user' ? 'You' : 'DerekAI'}</span>
-                    <div>${marked.parse(text)}</div>
+                    <div>${parsedHTML}</div>
                 </div>`;
             chatbox.appendChild(msgDiv);
             chatbox.scrollTop = chatbox.scrollHeight;

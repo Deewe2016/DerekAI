@@ -1071,7 +1071,7 @@
                     });
                 }
 
-                // Call Pollinations API with full search context
+                // Call Pollinations API with full perplexity search context
                 const response = await fetch("https://text.pollinations.ai/", {
                     method: "POST",
                     headers: {
@@ -1079,7 +1079,7 @@
                     },
                     body: JSON.stringify({
                         messages: payloadMessages,
-                        model: "searchgpt" // <-- Changed this to the correct legacy search model!
+                        model: "perplexity-fast" // <-- Use this model!
                     })
                 });
                 

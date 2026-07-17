@@ -1071,7 +1071,7 @@
                     });
                 }
 
-                // Call Pollinations API with full multimodel vision context
+                // Call Pollinations API with full search context
                 const response = await fetch("https://text.pollinations.ai/", {
                     method: "POST",
                     headers: {
@@ -1079,7 +1079,7 @@
                     },
                     body: JSON.stringify({
                         messages: payloadMessages,
-                        model: "gemini-search" // <-- Add this line right here!
+                        model: "searchgpt" // <-- Changed this to the correct legacy search model!
                     })
                 });
                 

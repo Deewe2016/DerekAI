@@ -1071,7 +1071,7 @@
                     });
                 }
 
-                // Call Pollinations API with full perplexity search context
+               // Call Pollinations API using the modern, updated endpoint
                 const response = await fetch("https://text.pollinations.ai/", {
                     method: "POST",
                     headers: {
@@ -1079,7 +1079,7 @@
                     },
                     body: JSON.stringify({
                         messages: payloadMessages,
-                        model: "perplexity-fast" // <-- Use this model!
+                        model: "openai" // Use "openai" - it is the most stable and always supported!
                     })
                 });
                 

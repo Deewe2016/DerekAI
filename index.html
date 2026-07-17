@@ -1078,7 +1078,8 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        messages: payloadMessages
+                        messages: payloadMessages,
+                        model: "gemini-search" // <-- Add this line right here!
                     })
                 });
                 

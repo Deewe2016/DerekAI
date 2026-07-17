@@ -1071,15 +1071,15 @@
                     });
                 }
 
-               // Call Pollinations API using the modern, updated endpoint
-                const response = await fetch("https://text.pollinations.ai/", {
+               // Connect to the brand-new Pollinations Search Endpoint
+                const response = await fetch("https://gen.pollinations.ai/v1/chat/completions", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         messages: payloadMessages,
-                        model: "openai" // Use "openai" - it is the most stable and always supported!
+                        model: "gemini-search" // <-- This turns on Google Search!
                     })
                 });
                 

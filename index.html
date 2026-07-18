@@ -1071,15 +1071,15 @@
                     });
                 }
 
-               // Connect to the newer Pollinations Endpoint
+             // Call Pollinations API using the free, anonymous default setup
                 const response = await fetch("https://text.pollinations.ai/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        messages: payloadMessages,
-                        model: "openai" // Forces it to use the updated OpenAI base model
+                        messages: payloadMessages
+                        // We completely removed the model line so it works anonymously without an API key!
                     })
                 });
                 
